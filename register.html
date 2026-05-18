@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>트레이너 등록 — FitMatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-50: #EFF6FF;
+    --blue-100: #DBEAFE;
+    --blue-400: #60A5FA;
+    --blue-500: #3B82F6;
+    --blue-600: #2563EB;
+    --blue-700: #1D4ED8;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-400: #9CA3AF;
+    --gray-600: #4B5563;
+    --gray-800: #1F2937;
+    --white: #FFFFFF;
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Header */
+  header {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--gray-100);
+    z-index: 100;
+    padding: 0 2rem;
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800; font-size: 22px;
+    color: var(--blue-600);
+    letter-spacing: -0.5px;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--gray-800); }
+
+  /* Stepper */
+  .stepper {
+    display: flex; justify-content: space-between;
+    margin-bottom: 40px; position: relative;
+  }
+  .stepper::before {
+    content: ''; position: absolute; top: 15px; left: 0; right: 0;
+    height: 2px; background: var(--gray-200); z-index: 0;
+  }
+  .step-item {
+    position: relative; z-index: 1; text-align: center; flex: 1;
+  }
+  .step-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--white); border: 2px solid var(--gray-200);
+    margin: 0 auto 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: var(--gray-400);
+    transition: all 0.2s;
+  }
+  .step-item.active .step-dot {
+    background: var(--blue-600); border-color: var(--blue-600); color: var(--white);
+    box-shadow: 0 0 0 4px var(--blue-50);
+  }
+  .step-item.completed .step-dot {
+    background: var(--blue-100); border-color: var(--blue-600); color: var(--blue-600);
+  }
+  .step-label { font-size: 12px; font-weight: 500; color: var(--gray-400); }
+  .step-item.active .step-label { color: var(--blue-600); font-weight: 700; }
+
+  /* Form Card */
+  .form-card {
+    background: var(--white);
+    border-radius: 24px;
+    padding: 40px;
+    border: 1px solid var(--gray-100);
+    box-shadow: 0 4px 40px rgba(0,0,0,0.03);
+  }
+  .form-step { display: none; }
+  .form-step.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  h2 { font-size: 24px; font-weight: 900; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .step-desc { color: var(--gray-400); font-size: 15px; margin-bottom: 32px; }
+
+  /* Form Elements */
+  .form-group { margin-bottom: 24px; }
+  .form-group label {
+    display: block; font-size: 14px; font-weight: 700;
+    color: var(--gray-800); margin-bottom: 8px;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 1.5px solid var(--gray-200); font-size: 15px;
+    font-family: inherit; transition: all 0.2s; background: var(--gray-50);
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--blue-400); background: var(--white);
+    box-shadow: 0 0 0 4px var(--blue-50);
+  }
+
+  /* Profile Upload */
+  .profile-upload {
+    display: flex; align-items: center; gap: 20px; margin-bottom: 32px;
+  }
+  .preview-circle {
+    width: 100px; height: 100px; border-radius: 32px;
+    background: var(--gray-100); display: flex; align-items: center; justify-content: center;
+    overflow: hidden; border: 2px dashed var(--gray-200); position: relative;
+  }
+  .preview-circle img { width: 100%; height: 100%; object-fit: cover; }
+  .preview-circle span { font-size: 32px; }
+  .upload-btn {
+    background: var(--white); border: 1.5px solid var(--gray-200);
+    padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .upload-btn:hover { border-color: var(--blue-400); color: var(--blue-600); }
+
+  /* Chips */
+  .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-input { display: none; }
+  .chip-label {
+    padding: 10px 20px; border-radius: 100px; background: var(--gray-100);
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    border: 1.5px solid transparent;
+  }
+  .chip-input:checked + .chip-label {
+    background: var(--blue-50); color: var(--blue-600); border-color: var(--blue-400);
+    font-weight: 700;
+  }
+
+  /* List Items (Certificates) */
+  .list-container { margin-top: 12px; }
+  .list-item {
+    display: grid; grid-template-columns: 1fr 100px auto; gap: 8px; margin-bottom: 8px;
+  }
+  .btn-icon {
+    width: 48px; height: 48px; border-radius: 12px; border: none;
+    background: var(--gray-100); color: var(--gray-600); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .btn-icon.add { background: var(--blue-50); color: var(--blue-600); }
+  .btn-icon.remove { background: #FEE2E2; color: #DC2626; }
+
+  /* Schedule Grid */
+  .schedule-grid {
+    display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 4px;
+    background: var(--gray-200); padding: 1px; border-radius: 12px; overflow: hidden;
+  }
+  .grid-header, .grid-cell {
+    background: var(--white); padding: 8px 4px; text-align: center; font-size: 12px;
+  }
+  .grid-header { font-weight: 700; color: var(--gray-400); background: var(--gray-50); }
+  .time-label { font-weight: 600; color: var(--gray-600); }
+  .time-slot {
+    background: var(--white); cursor: pointer; height: 32px; transition: all 0.1s;
+  }
+  .time-slot:hover { background: var(--blue-50); }
+  .time-slot.selected { background: var(--blue-500); }
+
+  /* Footer Buttons */
+  .form-footer {
+    display: flex; justify-content: space-between; margin-top: 40px; gap: 12px;
+  }
+  .btn {
+    padding: 16px 32px; border-radius: 14px; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; border: none; flex: 1;
+  }
+  .btn-prev { background: var(--gray-100); color: var(--gray-600); }
+  .btn-prev:hover { background: var(--gray-200); }
+  .btn-next { background: var(--blue-600); color: var(--white); box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+  .btn-next:hover { background: var(--blue-700); transform: translateY(-1px); }
+
+  /* Step 5 Preview */
+  .preview-section {
+    background: var(--gray-50); border-radius: 16px; padding: 24px; margin-top: 20px;
+  }
+  .summary-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .summary-table th, .summary-table td {
+    padding: 12px; text-align: left; border-bottom: 1px solid var(--gray-200); font-size: 14px;
+  }
+  .summary-table th { color: var(--gray-400); font-weight: 500; width: 120px; }
+
+  .trainer-card-preview {
+    background: var(--white); border-radius: 20px; border: 1.5px solid var(--blue-400);
+    padding: 24px; margin-bottom: 32px; box-shadow: 0 12px 40px rgba(37,99,235,0.1);
+  }
+
+  @media (max-width: 600px) {
+    .form-card { padding: 24px; }
+    .schedule-grid { grid-template-columns: 60px repeat(7, 1fr); }
+    .step-label { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="nav-logo">Fit<span>Match</span></a>
+</header>
+
+<div class="container">
+  <div class="stepper">
+    <div class="step-item active" data-step="1">
+      <div class="step-dot">1</div>
+      <div class="step-label">기본 정보</div>
+    </div>
+    <div class="step-item" data-step="2">
+      <div class="step-dot">2</div>
+      <div class="step-label">전문 분야</div>
+    </div>
+    <div class="step-item" data-step="3">
+      <div class="step-dot">3</div>
+      <div class="step-label">수업 일정</div>
+    </div>
+    <div class="step-item" data-step="4">
+      <div class="step-dot">4</div>
+      <div class="step-label">요금 · SNS</div>
+    </div>
+    <div class="step-item" data-step="5">
+      <div class="step-dot">5</div>
+      <div class="step-label">미리보기</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form id="trainerForm">
+      <!-- STEP 1: 기본 정보 -->
+      <div class="form-step active" id="step1">
+        <h2>기본 정보를 입력해 주세요</h2>
+        <p class="step-desc">회원들에게 보여질 가장 기본적인 정보입니다.</p>
+
+        <div class="profile-upload">
+          <div class="preview-circle" id="profilePreview">
+            <span>📷</span>
+          </div>
+          <div>
+            <label for="profileImg" class="upload-btn">사진 선택</label>
+            <input type="file" id="profileImg" accept="image/*" style="display:none">
+            <p style="font-size:12px; color:var(--gray-400); margin-top:8px;">권장 사이즈: 500x500px</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>이름</label>
+          <input type="text" name="name" placeholder="실명을 입력해 주세요" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+          <div class="form-group">
+            <label>성별</label>
+            <select name="gender">
+              <option value="male">남성</option>
+              <option value="female">여성</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>생년월일</label>
+            <input type="date" name="birthdate" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>연락처</label>
+          <input type="tel" name="phone" placeholder="010-0000-0000" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+          <div class="form-group">
+            <label>활동 지역 (시/도)</label>
+            <select name="region1">
+              <option value="대구">대구광역시</option>
+              <option value="서울">서울특별시</option>
+              <option value="부산">부산광역시</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>구/군</label>
+            <input type="text" name="region2" placeholder="예: 수성구" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>주요 활동 헬스장</label>
+          <input type="text" name="gym" placeholder="센터 명을 입력해 주세요">
+        </div>
+
+        <div class="form-group">
+          <label>한 줄 소개</label>
+          <input type="text" name="shortIntro" placeholder="나를 표현하는 한 문장 (최대 30자)" maxlength="30">
+        </div>
+
+        <div class="form-group">
+          <label>상세 소개</label>
+          <textarea name="longIntro" rows="5" placeholder="경력, 운동 철학, 수업 방식 등을 자유롭게 적어주세요"></textarea>
+          <p style="text-align:right; font-size:12px; color:var(--gray-400); margin-top:4px;">
+            <span id="charCount">0</span> / 1000자
+          </p>
+        </div>
+      </div>
+
+      <!-- STEP 2: 전문 분야 -->
+      <div class="form-step" id="step2">
+        <h2>어떤 분야의 전문가인가요?</h2>
+        <p class="step-desc">회원들이 종목과 목적에 맞춰 검색할 수 있습니다.</p>
+
+        <div class="form-group">
+          <label>주요 종목</label>
+          <div class="chip-group">
+            <input type="radio" name="category" value="헬스" id="cat-fitness" class="chip-input" checked>
+            <label for="cat-fitness" class="chip-label">🏋️ 헬스</label>
+            <input type="radio" name="category" value="필라테스" id="cat-pilates" class="chip-input">
+            <label for="cat-pilates" class="chip-label">🤸 필라테스</label>
+            <input type="radio" name="category" value="요가" id="cat-yoga" class="chip-input">
+            <label for="cat-yoga" class="chip-label">🧘 요가</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>수업 목적 (중복 선택 가능)</label>
+          <div class="chip-group">
+            <input type="checkbox" name="goals" value="다이어트" id="goal1" class="chip-input">
+            <label for="goal1" class="chip-label">다이어트</label>
+            <input type="checkbox" name="goals" value="근력 향상" id="goal2" class="chip-input">
+            <label for="goal2" class="chip-label">근력 향상</label>
+            <input type="checkbox" name="goals" value="바디프로필" id="goal3" class="chip-input">
+            <label for="goal3" class="chip-label">바디프로필</label>
+            <input type="checkbox" name="goals" value="재활/교정" id="goal4" class="chip-input">
+            <label for="goal4" class="chip-label">재활/교정</label>
+            <input type="checkbox" name="goals" value="대회 준비" id="goal5" class="chip-input">
+            <label for="goal5" class="chip-label">대회 준비</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>자격증</label>
+          <div id="certList" class="list-container">
+            <div class="list-item">
+              <input type="text" placeholder="자격증 명" class="cert-name">
+              <input type="text" placeholder="취득년도" class="cert-year">
+              <button type="button" class="btn-icon add" onclick="addCert()">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+          <div class="form-group">
+            <label>경력 연수</label>
+            <select name="experience">
+              <option value="1년 미만">1년 미만</option>
+              <option value="1~3년">1~3년</option>
+              <option value="3~5년">3~5년</option>
+              <option value="5~10년">5~10년</option>
+              <option value="10년 이상">10년 이상</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>수업 가능 언어</label>
+            <input type="text" name="languages" value="한국어" placeholder="예: 한국어, 영어">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: 수업 일정 -->
+      <div class="form-step" id="step3">
+        <h2>수업 가능한 시간을 설정해 주세요</h2>
+        <p class="step-desc">회원들이 예약 가능한 시간을 확인할 수 있습니다 (클릭/드래그)</p>
+
+        <div class="form-group">
+          <label>수업 가능 시간표</label>
+          <div class="schedule-grid" id="scheduleGrid">
+            <div class="grid-header"></div>
+            <div class="grid-header">월</div>
+            <div class="grid-header">화</div>
+            <div class="grid-header">수</div>
+            <div class="grid-header">목</div>
+            <div class="grid-header">금</div>
+            <div class="grid-header">토</div>
+            <div class="grid-header">일</div>
+            <!-- Grid generated by JS -->
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+          <div class="form-group">
+            <label>1회 수업 시간</label>
+            <select name="sessionTime">
+              <option value="50분">50분</option>
+              <option value="60분">60분</option>
+              <option value="90분">90분</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>수업 형태</label>
+            <select name="lessonType">
+              <option value="1:1">1:1 개인레슨</option>
+              <option value="그룹">그룹 레슨</option>
+              <option value="온라인">온라인 PT</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>예약 최소 기간</label>
+          <input type="text" name="minBooking" placeholder="예: 방문 1일 전까지 예약 가능">
+        </div>
+      </div>
+
+      <!-- STEP 4: 요금 · SNS -->
+      <div class="form-step" id="step4">
+        <h2>요금과 소셜 정보를 입력해 주세요</h2>
+        <p class="step-desc">투명한 요금 공개는 신뢰를 높여줍니다.</p>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>1회 요금</label>
+            <input type="number" name="price1" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>10회 패키지</label>
+            <input type="number" name="price10" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>20회 패키지</label>
+            <input type="number" name="price20" placeholder="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>체험 수업 여부</label>
+          <div class="chip-group">
+            <input type="radio" name="trial" value="possible" id="trial-yes" class="chip-input" checked>
+            <label for="trial-yes" class="chip-label">가능 (1회 할인)</label>
+            <input type="radio" name="trial" value="impossible" id="trial-no" class="chip-input">
+            <label for="trial-no" class="chip-label">불가능</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>환불 정책</label>
+          <textarea name="refundPolicy" rows="3" placeholder="환불 규정을 명확히 적어주세요"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>카카오 오픈채팅 링크</label>
+          <input type="url" name="kakao" placeholder="https://open.kakao.com/...">
+        </div>
+
+        <div class="form-group">
+          <label>인스타그램 ID</label>
+          <input type="text" name="instagram" placeholder="@username">
+        </div>
+      </div>
+
+      <!-- STEP 5: 미리보기 -->
+      <div class="form-step" id="step5">
+        <h2>최종 확인 후 등록을 완료하세요</h2>
+        <p class="step-desc">입력하신 정보가 맞는지 다시 한번 확인해 주세요.</p>
+
+        <div class="trainer-card-preview" id="cardPreview">
+          <!-- Preview card content injected by JS -->
+        </div>
+
+        <div class="preview-section">
+          <h3>입력 정보 요약</h3>
+          <table class="summary-table" id="summaryTable">
+            <!-- Summary rows injected by JS -->
+          </table>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn btn-prev" id="prevBtn" style="display:none">이전</button>
+        <button type="button" class="btn btn-next" id="nextBtn">다음 단계</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 5;
+  const form = document.getElementById('trainerForm');
+  const nextBtn = document.getElementById('nextBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const profileImg = document.getElementById('profileImg');
+  const profilePreview = document.getElementById('profilePreview');
+  const charCount = document.getElementById('charCount');
+  const longIntro = document.querySelector('textarea[name="longIntro"]');
+
+  // Next / Prev Navigation
+  nextBtn.addEventListener('click', () => {
+    if (currentStep < totalSteps) {
+      if (currentStep === 4) {
+        generatePreview();
+      }
+      goToStep(currentStep + 1);
+    } else {
+      alert('트레이너 등록이 완료되었습니다!');
+      window.location.href = 'index.html';
+    }
+  });
+
+  prevBtn.addEventListener('click', () => {
+    if (currentStep > 1) {
+      goToStep(currentStep - 1);
+    }
+  });
+
+  function goToStep(step) {
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.remove('active');
+    if (currentStep < step) document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.add('completed');
+    
+    currentStep = step;
+    
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.add('active');
+    document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.remove('completed');
+
+    prevBtn.style.display = currentStep === 1 ? 'none' : 'block';
+    nextBtn.innerText = currentStep === totalSteps ? '등록 완료' : '다음 단계';
+    
+    window.scrollTo(0, 0);
+  }
+
+  // Profile Image Preview
+  profileImg.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        profilePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Detailed Intro Character Count
+  longIntro.addEventListener('input', (e) => {
+    charCount.innerText = e.target.value.length;
+  });
+
+  // Certificate Management
+  function addCert() {
+    const container = document.getElementById('certList');
+    const newItem = document.createElement('div');
+    newItem.className = 'list-item';
+    newItem.innerHTML = `
+      <input type="text" placeholder="자격증 명" class="cert-name">
+      <input type="text" placeholder="취득년도" class="cert-year">
+      <button type="button" class="btn-icon remove" onclick="this.parentElement.remove()">-</button>
+    `;
+    container.appendChild(newItem);
+  }
+
+  // Schedule Grid Generation
+  const scheduleGrid = document.getElementById('scheduleGrid');
+  const hours = ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
+  
+  hours.forEach(hour => {
+    const label = document.createElement('div');
+    label.className = 'grid-cell time-label';
+    label.innerText = hour;
+    scheduleGrid.appendChild(label);
+    
+    for (let i = 0; i < 7; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'grid-cell time-slot';
+      slot.addEventListener('click', () => slot.classList.toggle('selected'));
+      scheduleGrid.appendChild(slot);
+    }
+  });
+
+  // Step 5 Preview Generation
+  function generatePreview() {
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    const goals = Array.from(document.querySelectorAll('input[name="goals"]:checked')).map(cb => cb.value);
+    
+    // Card Preview
+    const cardPreview = document.getElementById('cardPreview');
+    const profileSrc = profilePreview.querySelector('img') ? profilePreview.querySelector('img').src : '';
+    
+    cardPreview.innerHTML = `
+      <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
+        <div style="width:64px; height:64px; border-radius:20px; background:var(--blue-100); overflow:hidden; display:flex; align-items:center; justify-content:center;">
+          ${profileSrc ? `<img src="${profileSrc}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="font-size:24px;">${data.name?.[0] || 'K'}</span>`}
+        </div>
+        <div>
+          <h3 style="font-size:18px;">${data.name || '이름 없음'} 트레이너</h3>
+          <p style="font-size:13px; color:var(--gray-400);">${data.category} · ${data.region1} ${data.region2}</p>
+        </div>
+      </div>
+      <p style="font-size:14px; font-weight:700; color:var(--blue-600); margin-bottom:8px;">"${data.shortIntro || '안녕하세요!'}"</p>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;">
+        ${goals.map(g => `<span style="background:var(--blue-50); color:var(--blue-600); padding:4px 12px; border-radius:100px; font-size:12px;">${g}</span>`).join('')}
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--gray-100); pt:16px; margin-top:16px; padding-top:16px;">
+        <div style="font-size:18px; font-weight:900;">${data.price1 ? Number(data.price1).toLocaleString() : '0'}원 <span style="font-size:12px; font-weight:400; color:var(--gray-400);">/ 1회</span></div>
+      </div>
+    `;
+
+    // Summary Table
+    const summaryTable = document.getElementById('summaryTable');
+    summaryTable.innerHTML = `
+      <tr><th>이름</th><td>${data.name}</td></tr>
+      <tr><th>활동 지역</th><td>${data.region1} ${data.region2} (${data.gym})</td></tr>
+      <tr><th>전문 분야</th><td>${data.category} (${goals.join(', ')})</td></tr>
+      <tr><th>경력</th><td>${data.experience}</td></tr>
+      <tr><th>요금</th><td>1회: ${data.price1}원 / 10회: ${data.price10}원</td></tr>
+      <tr><th>SNS</th><td>Insta: ${data.instagram} / Kakao: ${data.kakao ? '등록됨' : '없음'}</td></tr>
+    `;
+  }
+</script>
+
+</body>
+</html>
