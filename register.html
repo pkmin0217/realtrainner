@@ -155,7 +155,7 @@
     font-weight: 700;
   }
 
-  /* List Items (Certificates) */
+  /* List Items */
   .list-container { margin-top: 12px; }
   .list-item {
     display: grid; grid-template-columns: 1fr 100px auto; gap: 8px; margin-bottom: 8px;
@@ -295,9 +295,23 @@
           <div class="form-group">
             <label>활동 지역 (시/도)</label>
             <select name="region1">
-              <option value="대구">대구광역시</option>
               <option value="서울">서울특별시</option>
               <option value="부산">부산광역시</option>
+              <option value="대구">대구광역시</option>
+              <option value="인천">인천광역시</option>
+              <option value="광주">광주광역시</option>
+              <option value="대전">대전광역시</option>
+              <option value="울산">울산광역시</option>
+              <option value="세종">세종특별자치시</option>
+              <option value="경기">경기도</option>
+              <option value="강원">강원특별자치도</option>
+              <option value="충북">충청북도</option>
+              <option value="충남">충청남도</option>
+              <option value="전북">전북특별자치도</option>
+              <option value="전남">전라남도</option>
+              <option value="경북">경상북도</option>
+              <option value="경남">경상남도</option>
+              <option value="제주">제주특별자치도</option>
             </select>
           </div>
           <div class="form-group">
@@ -393,7 +407,7 @@
         <p class="step-desc">회원들이 예약 가능한 시간을 확인할 수 있습니다 (클릭/드래그)</p>
 
         <div class="form-group">
-          <label>수업 가능 시간표</label>
+          <label>수업 가능 시간표 (1시간 단위)</label>
           <div class="schedule-grid" id="scheduleGrid">
             <div class="grid-header"></div>
             <div class="grid-header">월</div>
@@ -410,25 +424,19 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
           <div class="form-group">
             <label>1회 수업 시간</label>
-            <select name="sessionTime">
-              <option value="50분">50분</option>
-              <option value="60분">60분</option>
-              <option value="90분">90분</option>
-            </select>
+            <input type="text" name="sessionTime" placeholder="예: 60분, 자유 설정 가능">
           </div>
           <div class="form-group">
-            <label>수업 형태</label>
-            <select name="lessonType">
-              <option value="1:1">1:1 개인레슨</option>
-              <option value="그룹">그룹 레슨</option>
-              <option value="온라인">온라인 PT</option>
-            </select>
+            <label>수업 형태 (중복 선택 가능)</label>
+            <div class="chip-group">
+              <input type="checkbox" name="lessonType" value="1:1 개인레슨" id="type1" class="chip-input">
+              <label for="type1" class="chip-label">1:1 개인레슨</label>
+              <input type="checkbox" name="lessonType" value="그룹 레슨" id="type2" class="chip-input">
+              <label for="type2" class="chip-label">그룹 레슨</label>
+              <input type="checkbox" name="lessonType" value="온라인 PT" id="type3" class="chip-input">
+              <label for="type3" class="chip-label">온라인 PT</label>
+            </div>
           </div>
-        </div>
-
-        <div class="form-group">
-          <label>예약 최소 기간</label>
-          <input type="text" name="minBooking" placeholder="예: 방문 1일 전까지 예약 가능">
         </div>
       </div>
 
@@ -437,28 +445,24 @@
         <h2>요금과 소셜 정보를 입력해 주세요</h2>
         <p class="step-desc">투명한 요금 공개는 신뢰를 높여줍니다.</p>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
-          <div class="form-group">
-            <label>1회 요금</label>
-            <input type="number" name="price1" placeholder="0">
-          </div>
-          <div class="form-group">
-            <label>10회 패키지</label>
-            <input type="number" name="price10" placeholder="0">
-          </div>
-          <div class="form-group">
-            <label>20회 패키지</label>
-            <input type="number" name="price20" placeholder="0">
+        <div class="form-group">
+          <label>수업 요금 패키지</label>
+          <div id="priceList" class="list-container">
+            <div class="list-item" style="grid-template-columns: 1fr 1fr auto;">
+              <input type="text" placeholder="횟수 (예: 10회)" class="pkg-count">
+              <input type="number" placeholder="요금 (원)" class="pkg-price">
+              <button type="button" class="btn-icon add" onclick="addPricePkg()">+</button>
+            </div>
           </div>
         </div>
 
         <div class="form-group">
           <label>체험 수업 여부</label>
           <div class="chip-group">
-            <input type="radio" name="trial" value="possible" id="trial-yes" class="chip-input" checked>
-            <label for="trial-yes" class="chip-label">가능 (1회 할인)</label>
-            <input type="radio" name="trial" value="impossible" id="trial-no" class="chip-input">
-            <label for="trial-no" class="chip-label">불가능</label>
+            <input type="radio" name="trial" value="free" id="trial-yes" class="chip-input" checked>
+            <label for="trial-yes" class="chip-label">1회 무료체험</label>
+            <input type="radio" name="trial" value="none" id="trial-no" class="chip-input">
+            <label for="trial-no" class="chip-label">없음</label>
           </div>
         </div>
 
@@ -580,9 +584,23 @@
     container.appendChild(newItem);
   }
 
+  // Price Package Management
+  function addPricePkg() {
+    const container = document.getElementById('priceList');
+    const newItem = document.createElement('div');
+    newItem.className = 'list-item';
+    newItem.style.gridTemplateColumns = '1fr 1fr auto';
+    newItem.innerHTML = `
+      <input type="text" placeholder="횟수 (예: 10회)" class="pkg-count">
+      <input type="number" placeholder="요금 (원)" class="pkg-price">
+      <button type="button" class="btn-icon remove" onclick="this.parentElement.remove()">-</button>
+    `;
+    container.appendChild(newItem);
+  }
+
   // Schedule Grid Generation
   const scheduleGrid = document.getElementById('scheduleGrid');
-  const hours = ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
+  const hours = ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"];
   
   hours.forEach(hour => {
     const label = document.createElement('div');
@@ -603,7 +621,13 @@
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     const goals = Array.from(document.querySelectorAll('input[name="goals"]:checked')).map(cb => cb.value);
+    const lessonTypes = Array.from(document.querySelectorAll('input[name="lessonType"]:checked')).map(cb => cb.value);
     
+    const pkgs = Array.from(document.querySelectorAll('#priceList .list-item')).map(item => ({
+      count: item.querySelector('.pkg-count').value,
+      price: item.querySelector('.pkg-price').value
+    })).filter(p => p.count && p.price);
+
     // Card Preview
     const cardPreview = document.getElementById('cardPreview');
     const profileSrc = profilePreview.querySelector('img') ? profilePreview.querySelector('img').src : '';
@@ -623,7 +647,7 @@
         ${goals.map(g => `<span style="background:var(--blue-50); color:var(--blue-600); padding:4px 12px; border-radius:100px; font-size:12px;">${g}</span>`).join('')}
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--gray-100); pt:16px; margin-top:16px; padding-top:16px;">
-        <div style="font-size:18px; font-weight:900;">${data.price1 ? Number(data.price1).toLocaleString() : '0'}원 <span style="font-size:12px; font-weight:400; color:var(--gray-400);">/ 1회</span></div>
+        <div style="font-size:18px; font-weight:900;">${pkgs[0] ? Number(pkgs[0].price).toLocaleString() : '0'}원 <span style="font-size:12px; font-weight:400; color:var(--gray-400);">/ ${pkgs[0]?.count || '1회'}</span></div>
       </div>
     `;
 
@@ -633,8 +657,10 @@
       <tr><th>이름</th><td>${data.name}</td></tr>
       <tr><th>활동 지역</th><td>${data.region1} ${data.region2} (${data.gym})</td></tr>
       <tr><th>전문 분야</th><td>${data.category} (${goals.join(', ')})</td></tr>
+      <tr><th>수업 형태</th><td>${lessonTypes.join(', ')} / ${data.sessionTime}</td></tr>
       <tr><th>경력</th><td>${data.experience}</td></tr>
-      <tr><th>요금</th><td>1회: ${data.price1}원 / 10회: ${data.price10}원</td></tr>
+      <tr><th>요금</th><td>${pkgs.map(p => `${p.count}: ${Number(p.price).toLocaleString()}원`).join('<br>')}</td></tr>
+      <tr><th>체험 수업</th><td>${data.trial === 'free' ? '1회 무료체험 가능' : '없음'}</td></tr>
       <tr><th>SNS</th><td>Insta: ${data.instagram} / Kakao: ${data.kakao ? '등록됨' : '없음'}</td></tr>
     `;
   }
